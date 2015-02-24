@@ -66,8 +66,12 @@ final class TransactionImpl extends BaseDatastoreBatchWriter implements Transact
       requestPb.setIsolationLevel(isolationLevel.level().toPb());
     }
     ForceWrites forceWrites = (ForceWrites) optionsMap.get(TransactionOption.ForceWrites.class);
-    force = forceWrites == null ? false : forceWrites.force();
+    force = forceWrites != null && forceWrites.force();
     transaction = datastore.requestTransactionId(requestPb);
+    TransactionOption.JTAOption jtaOption = (TransactionOption.JTAOption) optionsMap.get(TransactionOption.JTAOption.class);
+    if (jtaOption != null) {
+      jtaOption.setResponse(JTAAdapter.attach(this));
+    }
   }
 
   @Override

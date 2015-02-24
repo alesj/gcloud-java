@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 
 public abstract class TransactionOption implements Serializable {
@@ -84,6 +85,26 @@ public abstract class TransactionOption implements Serializable {
     }
   }
 
+  public static final class JTAOption extends TransactionOption {
+
+    private static final long serialVersionUID = 1L;
+
+    private Callable<Transaction.Response> callable;
+
+    void setResponse(Callable<Transaction.Response> callable) {
+        this.callable = callable;
+    }
+
+    public Callable<Transaction.Response> getResponse() {
+        return callable;
+    }
+
+    @Override
+    BatchOption toBatchWriteOption() {
+      return null;
+    }
+  }
+
   TransactionOption() {
     // package protected
   }
@@ -98,6 +119,10 @@ public abstract class TransactionOption implements Serializable {
 
   public static IsolationLevel snapshot() {
     return new IsolationLevel(IsolationLevel.Level.SNAPSHOT);
+  }
+
+  public static JTAOption jta() {
+    return new JTAOption();
   }
 
   static Map<Class<? extends TransactionOption>, TransactionOption> asImmutableMap(
